@@ -11,5 +11,5 @@ export const getUserHandler = catchErrors(async (req, res) => {
 
     appAssert(user, NOT_FOUND, "User not found");
 
-    res.status(OK).json(user.omitPassword());
+    return res.status(OK).json(user.omitPassword());
 });

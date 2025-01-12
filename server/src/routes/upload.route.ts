@@ -12,8 +12,6 @@ const upload = multer({storage})
 
 const uploadRoute = Router();
 
-console.log()
-
 uploadRoute.get("/", getImage);
 uploadRoute.post("/", upload.single('image'), uploadImage);
 uploadRoute.delete("/:key", removeImage);

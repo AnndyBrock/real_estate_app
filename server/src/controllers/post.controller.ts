@@ -1,25 +1,48 @@
 import catchErrors from "../utils/catchErrors";
 import { CREATED, NOT_FOUND, OK } from "../constants/http";
-import { postSchema } from "../schemas/post.schemas";
-import { createNewPost } from "../services/post.service";
+import {draftPostSchema, postSchema} from "../schemas/post.schemas";
+import { draftPost } from "../services/post.service";
 import UserModel from "../models/user.model";
 import appAssert from "../utils/appAssert";
 import PostModel from "../models/post.model";
 
-export const createPost = catchErrors(async (req, res) => {
+export const createDraftPost = catchErrors(async (req, res) => {
     const userId = res.locals?.userId;
 
     const user = await UserModel.findById(userId);
     appAssert(user, NOT_FOUND, "User not found");
 
-    const request = postSchema.parse({
-        ...req.body,
-        userAgent: req.headers["user-agent"],
-    });
+    const request = draftPostSchema.parse(req.body);
 
-    const post = await createNewPost({ request, user });
+    const post = await draftPost({ request, user });
 
     return res.status(CREATED).json(post);
+});
+
+export const publishPost = catchErrors(async (req, res) => {
+    const userId = res.locals?.userId;
+    const { postId } = req.params;
+
+    const user = await UserModel.findById(userId);
+    appAssert(user, NOT_FOUND, "User not found");
+
+    const draftPost = await PostModel.findOne({
+        _id: postId,
+        status: "draft",
+        "agent.id": userId,
+    });
+    appAssert(draftPost, NOT_FOUND, "Draft post not found");
+
+    const updateData = postSchema.parse(req.body);
+
+    Object.assign(draftPost, updateData, { status: "published" });
+    await draftPost.save();
+
+    return res.status(OK).json({
+        success: true,
+        message: "Post finalized successfully",
+        post: draftPost,
+    });
 });
 
 export const getPosts = catchErrors(async (req, res) => {

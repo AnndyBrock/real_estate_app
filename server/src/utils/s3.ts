@@ -23,7 +23,8 @@ export interface UploadParams {
         buffer: Buffer;
         mimetype: string;
     };
-    userId: string; // plain string
+    userId: string;
+    postId?: string;
 }
 
 /**
@@ -37,11 +38,9 @@ export interface UploadResult {
 /**
  * Upload a file to an S3 bucket under a path derived from userId + UUID.
  */
-export async function uploadToS3({
-                                     file,
-                                     userId,
-                                 }: UploadParams): Promise<UploadResult> {
-    const key = `${userId}/${uuid()}`;
+export async function uploadToS3({file, userId, postId}: UploadParams): Promise<UploadResult> {
+    const post = postId || 'temp'
+    const key = `${userId}/${post}/${uuid()}`;
     const command = new PutObjectCommand({
         Bucket: BUCKET,
         Key: key,

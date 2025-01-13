@@ -2,7 +2,7 @@ import appAssert from "../utils/appAssert";
 import { CONFLICT } from "../constants/http";
 import PostModel from "../models/post.model";
 
-export const createNewPost = async (data: { request: any; user: any }) => {
+export const draftPost = async (data: { request: any; user: any }) => {
     const { request, user } = data;
 
     const existingListing = await PostModel.exists({

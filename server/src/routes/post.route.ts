@@ -17,14 +17,14 @@ const postRoute = Router();
 
 postRoute.get("/", getPosts);
 postRoute.post("/", authenticate, createDraftPost);
-uploadRoute.post(
+postRoute.post(
     "/photo",
     authenticate,
     upload.array('image'),
     uploadImages
 );
 postRoute.patch("/:postId", authenticate, publishPost);
-uploadRoute.delete("/photo/:key", removeImage);
+postRoute.delete("/photo/:key", removeImage);
 
 
 export default postRoute;

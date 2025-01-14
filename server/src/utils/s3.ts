@@ -32,15 +32,17 @@ export interface UploadParams {
  */
 export interface UploadResult {
     key?: string;
+    url?: string;
     error?: unknown;
 }
 
 /**
  * Upload a file to an S3 bucket under a path derived from userId + UUID.
  */
-export async function uploadToS3({file, userId, postId}: UploadParams): Promise<UploadResult> {
-    const post = postId || 'temp'
-    const key = `${userId}/${post}/${uuid()}`;
+export async function uploadToS3({ file, userId, postId }: UploadParams): Promise<UploadResult> {
+    const key = `${userId}/${postId}/${uuid()}`;
+    const S3_BASE_URL = `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`;
+
     const command = new PutObjectCommand({
         Bucket: BUCKET,
         Key: key,
@@ -50,9 +52,10 @@ export async function uploadToS3({file, userId, postId}: UploadParams): Promise<
 
     try {
         await s3.send(command);
-        return { key };
+        const url = `${S3_BASE_URL}/${key}`;
+        return { key, url };
     } catch (error) {
-        console.log("Error uploading to S3:", error);
+        console.error("Error uploading to S3:", error);
         return { error };
     }
 }
@@ -98,28 +101,44 @@ type GetUserSignedUrlResult =
 
 /**
  * Get signed URLs for all images that belong to a user.
- * In success case, we return `{ preSignedUrls: string[] }`.
+ * In success case, we return `{ preSignedUrls: { key: string; signedUrl: string }[] }`.
  * If there's an error, we return `{ error: unknown }`.
  */
 export async function getUserSignedUrl(
     userId: string
 ): Promise<GetUserSignedUrlResult> {
-    const imageKeys = await getImagesKeysByUser(userId);
-    if ("error" in imageKeys) {
-        return { error: imageKeys.error };
-    }
+    try {
+        const imageKeys = await getImagesKeysByUser(userId);
 
+        if (!Array.isArray(imageKeys)) {
+            return { error: "Failed to retrieve image keys" };
+        }
+
+        return await signedUrl(imageKeys);
+    } catch (error) {
+        console.log("Error getting signed URLs for user:", error);
+        return { error };
+    }
+}
+
+/**
+ * Generate signed URLs for a given array of image keys.
+ */
+export async function signedUrl(
+    imageKeys: string[]
+): Promise<GetUserSignedUrlResult> {
     try {
         const preSignedUrls = await Promise.all(
             imageKeys.map(async (key) => {
                 const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
-                const url = await getSignedUrl(s3, command, { expiresIn: 1800 });
+                const url = await getSignedUrl(s3, command);
+
                 return { key, signedUrl: url };
             })
         );
         return { preSignedUrls };
     } catch (error) {
-        console.log("Error getting signed URL:", error);
+        console.log("Error generating signed URLs:", error);
         return { error };
     }
 }

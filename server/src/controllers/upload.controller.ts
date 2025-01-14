@@ -3,7 +3,7 @@ import catchErrors from "../utils/catchErrors";
 import UserModel from "../models/user.model";
 import appAssert from "../utils/appAssert";
 import { BAD_REQUEST, NOT_FOUND, OK } from "../constants/http";
-import { getUserSignedUrl, removeImageFromS3, uploadToS3 } from "../utils/s3";
+import {getUserSignedUrl, removeImageFromS3, signedUrl, uploadToS3} from "../utils/s3";
 import { z } from "zod";
 import PostModel from "../models/post.model";
 
@@ -27,24 +27,29 @@ export const uploadImages = catchErrors(async (req, res) => {
 
     const uploadResults = await Promise.all(
         files.map(async (file) => {
-            const { key, error } = await uploadToS3({ file, userId, postId });
-            return { key, error };
+            const { url, key, error } = await uploadToS3({ file, userId, postId });
+            return { url, key, error };
         })
     );
 
+
     const successfulUploads = uploadResults
-        .filter((result) => !result.error && result.key)
-        .map((result) => result.key as string);
+        .filter((result) => !result.error && result.url) // Фильтруем только успешные загрузки
+        .map((result) => result.url as string);
 
     if (successfulUploads.length > 0) {
         post.photos = [...(post.photos || []), ...successfulUploads];
         await post.save();
-    }
 
+        return res.status(OK).json({
+            success: true,
+            uploaded: post.photos,
+        });
+    }
+    console.log(successfulUploads)
     return res.status(OK).json({
         success: true,
         uploaded: successfulUploads,
-        errors: uploadResults.filter((result) => result.error),
     });
 });
 

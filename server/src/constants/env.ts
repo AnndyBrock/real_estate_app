@@ -1,11 +1,11 @@
 const getEnv = (key: string, defaultValue?: string): string => {
-    console.log(process.env[key]);
-    const value = process.env[key] || defaultValue;
+  console.log(process.env[key]);
+  const value = process.env[key] || defaultValue;
 
-    if (value === undefined) {
-        throw new Error(`Missing environment variable ${key}`);
-    }
-    return value;
+  if (value === undefined) {
+    throw new Error(`Missing environment variable ${key}`);
+  }
+  return value;
 };
 
 export const DATABASE_URL = getEnv("DATABASE_URL");

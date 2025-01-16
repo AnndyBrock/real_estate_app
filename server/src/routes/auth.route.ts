@@ -1,13 +1,13 @@
 import { Router } from "express";
 
 import {
-    loginHandler,
-    registerHandler,
-    logoutHandler,
-    refreshHandler,
-    verifyEmailHandler,
-    sendPasswordResetHandler,
-    resetPasswordHandler
+  loginHandler,
+  registerHandler,
+  logoutHandler,
+  refreshHandler,
+  verifyEmailHandler,
+  sendPasswordResetHandler,
+  resetPasswordHandler,
 } from "../controllers/auth.controller";
 
 const authRoute = Router();

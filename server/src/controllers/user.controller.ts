@@ -5,11 +5,11 @@ import { NOT_FOUND } from "../constants/http";
 import { OK } from "../constants/http";
 
 export const getUserHandler = catchErrors(async (req, res) => {
-    const userId = res.locals?.userId;
+  const userId = res.locals?.userId;
 
-    const user = await UserModel.findById(userId);
+  const user = await UserModel.findById(userId);
 
-    appAssert(user, NOT_FOUND, "User not found");
+  appAssert(user, NOT_FOUND, "User not found");
 
-    return res.status(OK).json(user.omitPassword());
+  return res.status(OK).json(user.omitPassword());
 });

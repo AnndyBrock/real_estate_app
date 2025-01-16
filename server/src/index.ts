@@ -1,6 +1,6 @@
 import "dotenv/config";
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectToDb from "./config/db";
 import errorHandler from "./middleware/errorHandler";
@@ -19,18 +19,18 @@ app.use(cors({ origin: APP_ORIGIN, credentials: true }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-    return res.status(OK).json({ status: "Success" });
+  return res.status(OK).json({ status: "Success" });
 });
 
 app.use("/auth", authRoute);
 
 app.use("/user", authenticate, userRoutes);
-app.use("/post", postRoute)
+app.use("/post", postRoute);
 
 app.use(errorHandler);
 
 // Start server
 app.listen(PORT, async () => {
-    console.log(`Server is running on port ${PORT}`);
-    await connectToDb();
+  console.log(`Server is running on port ${PORT}`);
+  await connectToDb();
 });

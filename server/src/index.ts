@@ -10,6 +10,7 @@ import authRoute from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
 import authenticate from "./middleware/authenticate";
 import postRoute from "./routes/post.route";
+import contactRoute from "./routes/contact.route";
 
 const app = express();
 // Middleware
@@ -26,6 +27,7 @@ app.use("/auth", authRoute);
 
 app.use("/user", authenticate, userRoutes);
 app.use("/post", postRoute);
+app.use("/contact", contactRoute);
 
 app.use(errorHandler);
 

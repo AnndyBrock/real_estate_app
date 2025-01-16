@@ -1,5 +1,5 @@
 import catchErrors from "../utils/catchErrors";
-import { CREATED, NOT_FOUND, OK } from "../constants/http";
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from "../constants/http";
 import { draftPostSchema, postSchema } from "../schemas/post.schemas";
 import { draftPost } from "../services/post.service";
 import UserModel from "../models/user.model";
@@ -17,6 +17,17 @@ export const createDraftPost = catchErrors(async (req, res) => {
   const post = await draftPost({ request, user });
 
   return res.status(CREATED).json(post);
+});
+
+export const getPostById = catchErrors(async (req, res) => {
+  const postId = req.params?.postId;
+
+  appAssert(postId, BAD_REQUEST, "Post ID is required");
+
+  const post = await PostModel.findById(postId);
+  appAssert(post, NOT_FOUND, "Post not found");
+
+  return res.status(OK).json(post);
 });
 
 export const publishPost = catchErrors(async (req, res) => {
